@@ -92,7 +92,7 @@ option after getting up.
 #define TECH_IN_PLACE 2
 #define TECH_ROLL 3
 #define TECH_MISS 4
-const std::vector<std::string> tech_items{"None", "Random", "In-Place", "Roll", "Miss Tech"};
+const std::vector<std::string> tech_items{"None", "Random", "In-Place", "RollF", "RollB", "Miss Tech"};
 const std::string tech_help = R""""(
 CPUs will perform a random
 tech option.
