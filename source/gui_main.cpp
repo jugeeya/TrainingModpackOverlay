@@ -13,7 +13,7 @@ static struct TrainingModpackMenu
   int ATTACK_STATE = MASH_NAIR;
   int FOLLOW_UP = 0;
   int LEDGE_STATE = RANDOM_LEDGE;
-  int TECH_STATE = RANDOM_TECH;
+  uint32_t TECH_STATE = 0x7;
   int MASH_STATE = NONE;
   int SHIELD_STATE = NONE;
   int DEFENSIVE_STATE = RANDOM_DEFENSIVE;
@@ -375,14 +375,50 @@ tsl::elm::Element *GuiMain::createUI() {
           list->addItem(ledgeItem);
           valueListItems.push_back(ledgeItem);
 
-          ValueListItem *techItem = new ValueListItem(
-              "Tech Options",
-              tech_items,
-              &menu.TECH_STATE,
-              "tech",
-              tech_help);
-          list->addItem(techItem);
-          valueListItems.push_back(techItem);
+          //ValueListItem *techItem = new ValueListItem(
+          //    "Tech Options",
+          //    tech_items,
+          //    &menu.TECH_STATE,
+          //    "tech",
+          //    tech_help);
+          //list->addItem(techItem);
+          //valueListItems.push_back(techItem);
+
+          {
+            auto listItem = new tsl::elm::ListItem("Tech Options");
+            listItem->setClickListener([](u64 keys)->bool{
+                if(keys & KEY_A) {
+                    tsl::changeTo<GuiLambda>([]()->tsl::elm::Element* {
+                        auto toggleList = new tsl::elm::List();
+                        std::vector<ToggleBitListItem*> items;
+                        uint32_t mask = 1;
+                        for(auto cstr : {"No Tech", "Roll", "In Place"})
+                        {
+                            items.emplace_back(new ToggleBitListItem(cstr, mask, &menu.TECH_STATE));
+                            mask <<= 1;
+                        }
+
+                        auto allOff = new SetToggleBitListItem({items[0]}, {items[1], items[2]}, "None");
+                        auto allOn = new SetToggleBitListItem(items, {}, "All");
+
+                        toggleList->addItem(allOn);
+                        toggleList->addItem(allOff);
+
+                        for(auto it : items)
+                        {
+                          toggleList->addItem(it);
+                        }
+
+                        auto frame = new tsl::elm::OverlayFrame("Tech Field", "test");
+                        frame->setContent(toggleList);
+                        return frame;
+                    });
+                    return true;
+                }
+                return false;
+            });
+            list->addItem(listItem);
+          }
 
           ValueListItem *defensiveItem = new ValueListItem(
               "Defensive Options",

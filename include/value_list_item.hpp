@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <cstdint>
 #include <tesla.hpp>
 #include "gui_sublist.hpp"
 
@@ -83,4 +84,55 @@ private:
   std::function<void(const std::vector<std::string>, int*, std::string, std::string, std::string)> m_valueChangeListener = nullptr;
   const std::string extdata;
   const std::string help;
+};
+
+class ToggleBitListItem : public tsl::elm::ToggleListItem
+{
+  uint32_t m_mask;
+  uint32_t* m_value;
+public:
+  ToggleBitListItem(const std::string& text, uint32_t mask, uint32_t* value)
+    : tsl::elm::ToggleListItem(text, (mask & *value) != 0), m_mask(mask), m_value(value)
+  {
+    setStateChangedListener([this](bool v)
+    {
+      if(v)
+      {
+        *m_value |= m_mask;
+      }
+      else
+      {
+        *m_value &= ~m_mask;
+      }
+    });
+  }
+  virtual ~ToggleBitListItem() = default;
+};
+
+class SetToggleBitListItem : public tsl::elm::ListItem
+{
+  std::vector<ToggleBitListItem*> m_itemsOn;
+  std::vector<ToggleBitListItem*> m_itemsOff;
+public:
+  SetToggleBitListItem(std::vector<ToggleBitListItem*> itemsOn, std::vector<ToggleBitListItem*> itemsOff, const std::string& text, const std::string& value = "")
+    : tsl::elm::ListItem(text, value), m_itemsOn(std::move(itemsOn)), m_itemsOff(std::move(itemsOff))
+    {
+      setClickListener([this](u64 keys)->bool
+      {
+        if(keys & KEY_A)
+        {
+          for(auto it : m_itemsOn)
+          {
+            it->setState(true); 
+          }
+          for(auto it : m_itemsOff)
+          {
+            it->setState(false);
+          }
+          return true;
+        }
+        return false;
+      });
+    }
+  virtual ~SetToggleBitListItem() = default;
 };
