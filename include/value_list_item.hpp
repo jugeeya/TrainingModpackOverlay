@@ -106,6 +106,26 @@ public:
       }
     });
   }
+  virtual bool onClick(u64 keys) override 
+  {
+    // temp band-aid for issues with ToggleListItem
+    if(keys & KEY_A)
+    {
+      setState(!m_state);
+      return ListItem::onClick(keys);
+    }
+    return false;
+  }
+  virtual void setState(bool state) override
+  {
+    // temp band-aid for issues with ToggleListItem
+    bool stateChanged = state != this->m_state;
+    ToggleListItem::setState(state);
+    if(stateChanged && m_stateChangedListener)
+    {
+      m_stateChangedListener(state);
+    }
+  }
   virtual ~ToggleBitListItem() = default;
 };
 
